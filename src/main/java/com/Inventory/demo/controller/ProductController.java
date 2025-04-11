@@ -1,5 +1,6 @@
 package com.Inventory.demo.controller;
 
+import com.Inventory.demo.dto.ProductDTO;
 import com.Inventory.demo.model.Product;
 import com.Inventory.demo.repositories.ProductRepository;
 import com.Inventory.demo.services.AuditService;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
@@ -20,24 +22,29 @@ public class ProductController {
     @Autowired
     private AuditService auditService;
 
-    // ✅ GET all products
+    // GET all products
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productRepository.findAll());
+    public ResponseEntity<List<ProductDTO>> getAllProducts() {
+        List<ProductDTO> productDTOs = productRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(productDTOs);
     }
 
-    // ✅ GET product by ID
+    // GET product by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-        return ResponseEntity.ok(product);
+        return ResponseEntity.ok(convertToDTO(product));
     }
 
-    // ✅ POST create product with audit logging
+    // POST create product with audit logging
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product, Principal principal) {
+    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productDTO, Principal principal) {
+        Product product = convertToEntity(productDTO);
         Product saved = productRepository.save(product);
+
         auditService.logAction(
                 "PRODUCT_CREATED",
                 "Product",
@@ -45,18 +52,22 @@ public class ProductController {
                 principal.getName(),
                 "Created product: " + saved.getName()
         );
-        return ResponseEntity.ok(saved);
+
+        return ResponseEntity.ok(convertToDTO(saved));
     }
 
-    // ✅ PUT update product with audit logging
+    // PUT update product with audit logging
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct, Principal principal) {
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody ProductDTO updatedProductDTO, Principal principal) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        product.setName(updatedProduct.getName());
-        product.setDescription(updatedProduct.getDescription());
-        product.setPrice(updatedProduct.getPrice());
+        // Update product fields from DTO
+        product.setName(updatedProductDTO.getName());
+        product.setDescription(updatedProductDTO.getDescription());
+        product.setCategory(updatedProductDTO.getCategory());
+        product.setPrice(updatedProductDTO.getPrice());
+        product.setStockQuantity(updatedProductDTO.getStockQuantity());
 
         Product saved = productRepository.save(product);
 
@@ -68,10 +79,10 @@ public class ProductController {
                 "Updated product: " + saved.getName()
         );
 
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.ok(convertToDTO(saved));
     }
 
-    // ✅ DELETE product with audit logging
+    // DELETE product with audit logging
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id, Principal principal) {
         Product product = productRepository.findById(id)
@@ -88,5 +99,32 @@ public class ProductController {
         );
 
         return ResponseEntity.ok("Product deleted");
+    }
+
+    // Helper method to convert Entity to DTO
+    private ProductDTO convertToDTO(Product product) {
+        ProductDTO dto = new ProductDTO();
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setCategory(product.getCategory());
+        dto.setPrice(product.getPrice());
+        dto.setStockQuantity(product.getStockQuantity());
+        dto.setDescription(product.getDescription());
+        return dto;
+    }
+
+    // Helper method to convert DTO to Entity
+    private Product convertToEntity(ProductDTO dto) {
+        Product product = new Product();
+        // Don't set ID for new entities, let DB generate it
+        if (dto.getId() != null) {
+            product.setId(dto.getId());
+        }
+        product.setName(dto.getName());
+        product.setCategory(dto.getCategory());
+        product.setPrice(dto.getPrice());
+        product.setStockQuantity(dto.getStockQuantity());
+        product.setDescription(dto.getDescription());
+        return product;
     }
 }

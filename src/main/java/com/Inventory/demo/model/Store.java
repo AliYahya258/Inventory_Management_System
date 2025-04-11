@@ -2,7 +2,7 @@ package com.Inventory.demo.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Entity
@@ -17,13 +17,9 @@ public class Store {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Store name is required")
     private String name;
 
-    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
-    private List<Inventory> inventoryItems;
-
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Inventory> inventoryList;
-
+    private List<Inventory> inventoryItems;
 }

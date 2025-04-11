@@ -25,27 +25,11 @@ public class AuthController {
         }
         User newUser = new User();
         newUser.setUsername(user.getUsername());
-        //BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         newUser.setPassword(user.getPassword());
         newUser.setRoles(Erole.SELLER);
         userService.saveUser(newUser);
         return ResponseEntity.ok("User registered successfully");
     }
-
-//    @PostMapping("/register")
-//    public ResponseEntity<String> registerSeller(@RequestBody LoginDto user) {
-//        if (userService.findByUsername(user.getUsername()).isPresent()) {
-//            return ResponseEntity.badRequest().body("Username already taken");
-//        }
-//
-//        User newUser = new User();
-//        newUser.setUsername(user.getUsername());
-//        newUser.setPassword(user.getPassword());
-//        newUser.setRoles(Erole.SELLER); // Only seller allowed from this endpoint
-//
-//        userService.saveUser(newUser);
-//        return ResponseEntity.ok("Seller registered successfully");
-//    }
 
 
     @PostMapping("/login")
