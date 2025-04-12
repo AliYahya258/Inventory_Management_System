@@ -2,6 +2,7 @@ package com.Inventory.demo.controller;
 
 import com.Inventory.demo.dto.InventoryDTO;
 import com.Inventory.demo.model.Inventory;
+import com.Inventory.demo.repositories.StoreRepository;
 import com.Inventory.demo.services.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,9 @@ public class InventoryController {
     @Autowired
     private InventoryService inventoryService;
 
+    @Autowired
+    private StoreRepository storeRepository;
+
     @GetMapping
     public List<InventoryDTO> getAllItems() {
         return inventoryService.getAllItems().stream()
@@ -28,9 +32,21 @@ public class InventoryController {
         return convertToDTO(inventoryService.getItemById(id));
     }
 
+//    @PostMapping
+//    public InventoryDTO addItem(@RequestBody InventoryDTO itemDTO) {
+//        Inventory saved = inventoryService.addItem(convertToEntity(itemDTO));
+//        return convertToDTO(saved);
+//    }
     @PostMapping
     public InventoryDTO addItem(@RequestBody InventoryDTO itemDTO) {
-        Inventory saved = inventoryService.addItem(convertToEntity(itemDTO));
+    Inventory inventory = convertToEntity(itemDTO);
+
+        // Get the store by ID and set it
+        if (itemDTO.getStoreId() != null) {
+        storeRepository.findById(itemDTO.getStoreId()).ifPresent(inventory::setStore);
+        }
+
+        Inventory saved = inventoryService.addItem(inventory);
         return convertToDTO(saved);
     }
 

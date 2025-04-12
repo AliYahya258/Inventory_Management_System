@@ -14,7 +14,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import java.time.Duration;
 
 @Configuration
-//@ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis", matchIfMissing = false)
+@ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis", matchIfMissing = false)
 @EnableCaching
 public class CacheConfig {
 

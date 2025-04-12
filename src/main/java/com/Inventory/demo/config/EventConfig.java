@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-//@ConditionalOnProperty(name = "spring.rabbitmq.host")
+@ConditionalOnProperty(name = "spring.rabbitmq.host")
 public class EventConfig {
 
     // Queue names

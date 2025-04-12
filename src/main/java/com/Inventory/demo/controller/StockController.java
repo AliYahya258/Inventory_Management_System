@@ -172,24 +172,48 @@ public class StockController {
     }
 
     // ✅ POST stock in with audit logging and use of DTOs
+//    @PostMapping("/in")
+//    public ResponseEntity<?> stockIn(@RequestParam Long storeId,
+//                                     @RequestParam Long productId,
+//                                     @RequestParam int quantity,
+//                                     Principal principal) {
+//        Product product = productRepository.findById(productId).orElseThrow();
+//        Store store = storeRepository.findById(storeId).orElseThrow();
+//
+//        // Increase stock and return StockDTO
+//        StockDTO stockDTO = stockService.increaseStock(product, store, quantity);
+//
+//        // Log audit action
+//        auditService.logAction(
+//                "STOCK_IN", "Stock", stockDTO.getId(), principal.getName(),
+//                "Added " + quantity + " units of '" + product.getName() + "' to store '" + store.getName() + "'"
+//        );
+//
+//        return ResponseEntity.ok(stockDTO);
+//    }
     @PostMapping("/in")
     public ResponseEntity<?> stockIn(@RequestParam Long storeId,
                                      @RequestParam Long productId,
                                      @RequestParam int quantity,
                                      Principal principal) {
-        Product product = productRepository.findById(productId).orElseThrow();
-        Store store = storeRepository.findById(storeId).orElseThrow();
+        try {
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+            Store store = storeRepository.findById(storeId)
+                    .orElseThrow(() -> new RuntimeException("Store not found"));
 
-        // Increase stock and return StockDTO
-        StockDTO stockDTO = stockService.increaseStock(product, store, quantity);
+            // Service now returns StockDTO directly
+            StockDTO stockDTO = stockService.increaseStock(product, store, quantity);
 
-        // Log audit action
-        auditService.logAction(
-                "STOCK_IN", "Stock", stockDTO.getId(), principal.getName(),
-                "Added " + quantity + " units of '" + product.getName() + "' to store '" + store.getName() + "'"
-        );
+            auditService.logAction(
+                    "STOCK_IN", "Stock", stockDTO.getId(), principal.getName(),
+                    "Added " + quantity + " units of '" + product.getName() + "' to store '" + store.getName() + "'"
+            );
 
-        return ResponseEntity.ok(stockDTO);
+            return ResponseEntity.ok(stockDTO);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // ✅ POST stock out with audit logging and use of DTOs
