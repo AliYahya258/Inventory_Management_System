@@ -17,7 +17,7 @@ public class StockMovementDTO {
     private LocalDateTime date;
 
     // Alternative constructor without ID
-    public StockMovementDTO(Long productId, Long storeId, int quantity, String type, LocalDateTime date) {
+    public StockMovementDTO(Long storeId, Long productId, int quantity, String type, LocalDateTime date) {
         this.productId = productId;
         this.storeId = storeId;
         this.quantity = quantity;

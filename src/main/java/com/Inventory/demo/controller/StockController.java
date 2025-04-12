@@ -210,7 +210,7 @@ public class StockController {
                 "Removed " + quantity + " units of '" + product.getName() + "' from store '" + store.getName() + "'"
         );
 
-        return ResponseEntity.ok(stockDTO); // Return DTO instead of Stock
+        return ResponseEntity.ok(stockDTO);
     }
 }
 
