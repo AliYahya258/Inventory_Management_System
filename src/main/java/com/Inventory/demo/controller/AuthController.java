@@ -8,6 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import com.Inventory.demo.dto.ApiResponse;
+import java.util.Optional;
+
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -61,6 +67,47 @@ public class AuthController {
 
         userService.saveUser(newUser);
         return ResponseEntity.ok("Admin registered successfully");
+    }
+
+    // 🗑️ Delete user by ID (admin only)
+    @DeleteMapping("/admin/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<String>> deleteUser(@PathVariable Long id) {
+        if (userService.deleteById(id)) {
+            return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
+        } else {
+            return ResponseEntity.status(404).body(ApiResponse.error("User not found"));
+        }
+    }
+
+    // 📋 Get all users (admin only)
+    @GetMapping("/admin/users")
+    //@PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<LoginDto>>> getAllUsers() {
+        List<LoginDto> users = userService.getAllUsers()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(ApiResponse.success(users));
+    }
+
+    // 🔍 Get user by ID (admin only)
+    @GetMapping("/admin/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<LoginDto>> getUserById(@PathVariable Long id) {
+        Optional<User> user = userService.getUserById(id);
+
+        return user.map(value -> ResponseEntity.ok(ApiResponse.success(convertToDTO(value))))
+                .orElseGet(() -> ResponseEntity.status(404).body(ApiResponse.error("User not found")));
+    }
+
+    // Helper to convert User -> LoginDto
+    private LoginDto convertToDTO(User user) {
+        LoginDto dto = new LoginDto();
+        dto.setUsername(user.getUsername());
+        dto.setPassword(user.getPassword());
+        return dto;
     }
 
 }
