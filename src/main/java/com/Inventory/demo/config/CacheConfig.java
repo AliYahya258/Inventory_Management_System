@@ -13,6 +13,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 
 import java.time.Duration;
 
+
 @Configuration
 @ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis", matchIfMissing = false)
 @EnableCaching
@@ -27,6 +28,21 @@ public class CacheConfig {
                         RedisSerializationContext.SerializationPair.fromSerializer(
                                 new GenericJackson2JsonRedisSerializer())
                 );
+
+//        // Custom cache configurations
+//        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+//
+//        // Product cache: longer TTL as they change less frequently
+//        cacheConfigurations.put("products", cacheConfiguration.entryTtl(Duration.ofMinutes(30)));
+//
+//        // Stock cache: shorter TTL as they change frequently
+//        cacheConfigurations.put("stocks", cacheConfiguration.entryTtl(Duration.ofMinutes(5)));
+//
+//        // Store cache: medium TTL
+//        cacheConfigurations.put("stores", cacheConfiguration.entryTtl(Duration.ofMinutes(20)));
+//
+//        // Audit logs: short TTL
+//        cacheConfigurations.put("auditLogs", cacheConfiguration.entryTtl(Duration.ofMinutes(2)));
 
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(cacheConfiguration)
